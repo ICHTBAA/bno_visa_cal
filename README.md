@@ -1,5 +1,5 @@
 # BNO Visa 離境日數計算機
-![ScreenShot](screen_shot.png)
+![ScreenShot](screenshot.png)
 - 用途：計算由 BNO Visa 批核日起到入籍日的離境日數，以免超出限額
 
 # 計算原則
