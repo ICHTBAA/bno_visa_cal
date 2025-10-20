@@ -1,6 +1,14 @@
+# 更新
+- v1.0 基本日子計算 (已刪)
+- v2.0 加入任意365日出境計算
+- v3.0 分開顯示「過365日」及「最長任意365日」出境記綠顯示，加入活動備註欄
+
 # BNO Visa 離境日數計算機
-![ScreenShot](screenshot.png)
-- 用途：計算由 BNO Visa 批核日起到入籍日的離境日數，以免超出限額
+- 想信近來會開始有 BNO Visa 移英港人陸續可以申請及入籍英國，呢個計數機用黎計算自己出國日子有無超出 Quota
+- 亦可計劃未來出境日子以免超過日數
+- Local 儲存記錄，不會上載/儲存記錄
+  
+![ScreenShotv3](screenshot/screenshot_v3_1.png) ![ScreenShotv3](screenshot/screenshot_v3_2.png)
 
 # 計算原則
 - 如申請人在香港申請，離境日數由 Visa 批核後即開始計算，直至入境英國為止
