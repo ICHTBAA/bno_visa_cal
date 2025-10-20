@@ -20,7 +20,7 @@ class TravelApp:
     def __init__(self, root):
         self.root = root
         self.root.title("BNO Visa 離境日數計算")
-        self.root.geometry("600x510") 
+        self.root.geometry("630x580") # Adjusted size
         self.root.resizable(False, True) 
         self.root.configure(bg="#f0f0f0")
 
@@ -29,10 +29,12 @@ class TravelApp:
         self.entry_arrival = None
         
         self.lbl_total = None
-        self.lbl_365 = None
+        self.lbl_max_365 = None # Renamed
         self.lbl_period = None
         self.lbl_final_year = None 
         self.lbl_save_date = None
+        self.lbl_past_365 = None # New label
+        self.max_365_periods = [] # To store the worst periods
         
         self.canvas = None
         self.scrollable_frame = None 
@@ -84,14 +86,27 @@ class TravelApp:
         frame_static_top = tk.Frame(self.root, bg="#f0f0f0")
         frame_static_top.pack(pady=10)
 
+        # Row 0: Labels
         tk.Label(frame_static_top, text="批核日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=0, padx=10, pady=(0, 3))
         tk.Label(frame_static_top, text="到達日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=1, padx=10, pady=(0, 3))
-        tk.Label(frame_static_top, text="日期格式：yyyy-mm-dd", bg="#f0f0f0", fg="#555", font=("Microsoft JhengHei", 9)).grid(row=0, column=2, padx=10, pady=(0, 3), columnspan=2)
+        
+        # Date format hint aligned to the right (over column 2 and 3)
+        tk.Label(frame_static_top, text="日期格式：yyyy-mm-dd", bg="#f0f0f0", fg="#555", font=("Microsoft JhengHei", 9)).grid(row=0, column=2, padx=(10, 5), pady=(0, 3), columnspan=2, sticky="e")
 
+        # Row 1: Entries
         self.entry_approval = tk.Entry(frame_static_top, width=15, justify="center")
         self.entry_arrival = tk.Entry(frame_static_top, width=15, justify="center")
+        
+        # padx=10 should match the rows below
         self.entry_approval.grid(row=1, column=0, padx=10, pady=(0, 10))
         self.entry_arrival.grid(row=1, column=1, padx=10, pady=(0, 10))
+        
+        # **ADDED PLACEHOLDERS FOR ALIGNMENT**
+        # Placeholder for column 2 (活動) to maintain consistent column structure
+        tk.Label(frame_static_top, text="", width=15, bg="#f0f0f0").grid(row=1, column=2, padx=10, pady=(0, 10)) 
+        # Placeholder for column 3 (刪除) to maintain consistent column structure
+        tk.Label(frame_static_top, text="", width=5, bg="#f0f0f0").grid(row=1, column=3, padx=5, pady=(0, 10)) 
+
         self.entry_approval.bind("<FocusOut>", lambda e: self.validate_date(self.entry_approval))
         self.entry_arrival.bind("<FocusOut>", lambda e: self.validate_date(self.entry_arrival))
         
@@ -118,9 +133,11 @@ class TravelApp:
             )
         )
         
+        # Updated headers with consistent padx
         tk.Label(self.scrollable_frame, text="出國日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=0, padx=10, pady=(0, 3))
         tk.Label(self.scrollable_frame, text="回國日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=1, padx=10, pady=(0, 3))
-        tk.Label(self.scrollable_frame, text="選取刪除", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=2, padx=10, pady=(0, 3))
+        tk.Label(self.scrollable_frame, text="活動", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=2, padx=10, pady=(0, 3))
+        tk.Label(self.scrollable_frame, text="刪除", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=3, padx=10, pady=(0, 3))
 
         frame_buttons = tk.Frame(self.root, bg="#f0f0f0")
         frame_buttons.pack(pady=5)
@@ -132,15 +149,22 @@ class TravelApp:
         frame_results = tk.Frame(self.root, bg="#f0f0f0")
         frame_results.pack(pady=10)
         
-        self.lbl_total = tk.Label(frame_results, text="總離境日數：0", bg="#f0f0f0", font=("Microsoft JhengHei", 10))
-        self.lbl_total.pack()
-        self.lbl_365 = tk.Label(frame_results, text="任意365日內最多離境：0（剩餘180日）", bg="#f0f0f0", font=("Microsoft JhengHei", 10))
-        self.lbl_365.pack()
+        # Reduced font size for results
+        result_font = ("Microsoft JhengHei", 9) 
         
-        self.lbl_period = tk.Label(frame_results, text="入籍計算期（+1年至+6年）離境日數：N/A", bg="#f0f0f0", font=("Microsoft JhengHei", 10))
+        self.lbl_total = tk.Label(frame_results, text="總離境日數：0", bg="#f0f0f0", font=result_font)
+        self.lbl_total.pack()
+        
+        self.lbl_past_365 = tk.Label(frame_results, text="過去365日離境日數：N/A", bg="#f0f0f0", font=result_font)
+        self.lbl_past_365.pack()
+        
+        self.lbl_max_365 = tk.Label(frame_results, text="任意365日內最多離境：0（剩餘180日）", bg="#f0f0f0", font=result_font)
+        self.lbl_max_365.pack()
+        
+        self.lbl_period = tk.Label(frame_results, text="入籍計算期（+1年至+6年）離境日數：N/A", bg="#f0f0f0", font=result_font)
         self.lbl_period.pack()
 
-        self.lbl_final_year = tk.Label(frame_results, text="最後一年離境日數：N/A", bg="#f0f0f0", font=("Microsoft JhengHei", 10))
+        self.lbl_final_year = tk.Label(frame_results, text="最後一年離境日數：N/A", bg="#f0f0f0", font=result_font)
         self.lbl_final_year.pack()
 
         frame_footer = tk.Frame(self.root, bg="#f0f0f0")
@@ -151,27 +175,37 @@ class TravelApp:
         
         tk.Button(frame_footer, text="💡 Read Me", command=self.open_readme).pack(side=tk.RIGHT)
 
-    def add_row(self, out_date="", in_date=""):
+    # Added 'activity' parameter
+    def add_row(self, out_date="", in_date="", activity=""): 
         row = []
         new_row_index = 1 + len(self.rows) 
         
         parent_frame = self.scrollable_frame
         
+        # Out Date
         entry_out = tk.Entry(parent_frame, width=15, justify="center")
         entry_out.grid(row=new_row_index, column=0, padx=10, pady=(0, 5))
         entry_out.bind("<FocusOut>", lambda e: self.validate_date(entry_out))
         entry_out.insert(0, out_date)
         row.append(entry_out)
         
+        # In Date
         entry_in = tk.Entry(parent_frame, width=15, justify="center")
         entry_in.grid(row=new_row_index, column=1, padx=10, pady=(0, 5))
         entry_in.bind("<FocusOut>", lambda e: self.validate_date(entry_in))
         entry_in.insert(0, in_date)
         row.append(entry_in)
         
+        # Activity (New)
+        entry_activity = tk.Entry(parent_frame, width=15, justify="left")
+        entry_activity.grid(row=new_row_index, column=2, padx=10, pady=(0, 5))
+        entry_activity.insert(0, activity)
+        row.append(entry_activity) 
+        
+        # Checkbox (Now at column 3)
         var = tk.BooleanVar()
         chk = tk.Checkbutton(parent_frame, variable=var, bg="#f0f0f0")
-        chk.grid(row=new_row_index, column=2, padx=5)
+        chk.grid(row=new_row_index, column=3, padx=5)
         row.append(var)
 
         self.rows.append(row)
@@ -196,9 +230,11 @@ class TravelApp:
             
             row[0].grid(row=current_row_index, column=0, padx=10, pady=(0, 5))
             row[1].grid(row=current_row_index, column=1, padx=10, pady=(0, 5))
+            row[2].grid(row=current_row_index, column=2, padx=10, pady=(0, 5)) # Activity
             
-            chk = tk.Checkbutton(parent_frame, variable=row[2], bg="#f0f0f0")
-            chk.grid(row=current_row_index, column=2, padx=5)
+            # Checkbox is row[3] now
+            chk = tk.Checkbutton(parent_frame, variable=row[3], bg="#f0f0f0")
+            chk.grid(row=current_row_index, column=3, padx=5)
             
         parent_frame.update_idletasks()
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
@@ -207,9 +243,9 @@ class TravelApp:
     def delete_selected(self):
         new_rows = []
         for row in self.rows:
-            if row[2].get():
-                row[0].destroy()
-                row[1].destroy()
+            if row[3].get(): # Checkbox is row[3] now
+                for entry in row[:3]: # Destroy all entries (date, date, activity)
+                    entry.destroy()
             else:
                 new_rows.append(row)
         
@@ -242,12 +278,17 @@ class TravelApp:
                 self.lbl_save_date.config(text=f"上次儲存日期：{data[0][2]}")
 
             for row in self.rows:
+                # Destroying existing entries (important for redraw_rows)
                 row[0].destroy()
                 row[1].destroy()
+                row[2].destroy() # Activity entry
             self.rows = []
             
             for r in data[1:]:
-                self.add_row(r[0], r[1])
+                out_date = r[0] if len(r) > 0 else ""
+                in_date = r[1] if len(r) > 1 else ""
+                activity = r[2] if len(r) > 2 else "" # Load activity
+                self.add_row(out_date, in_date, activity)
             if not self.rows:
                 self.add_row()
 
@@ -257,8 +298,9 @@ class TravelApp:
         for row in self.rows:
             out_date = row[0].get().strip()
             in_date = row[1].get().strip()
+            activity = row[2].get().strip() # Get activity
             if out_date or in_date:
-                rows_data.append([out_date, in_date])
+                rows_data.append([out_date, in_date, activity])
 
         with open(DATA_FILE, "w", newline='', encoding="utf-8") as f:
             csv.writer(f).writerows(rows_data)
@@ -274,7 +316,8 @@ class TravelApp:
         
         if not approval or not arrival:
             self.lbl_total.config(text="總離境日數：0")
-            self.lbl_365.config(text="任意365日內最多離境：N/A")
+            self.lbl_past_365.config(text="過去365日離境日數：N/A")
+            self.lbl_max_365.config(text="任意365日內最多離境：N/A")
             self.lbl_period.config(text=f"入籍計算期（+1年至+6年）離境日數：N/A")
             self.lbl_final_year.config(text="最後一年離境日數：N/A") 
             return
@@ -313,31 +356,80 @@ class TravelApp:
 
         total_departure_days_count = len(all_departure_days)
         self.lbl_total.config(text=f"總離境日數：{total_departure_days_count}")
+        
+        # 3. New: Past 365 Days Calculation
+        today = datetime.now().date()
+        past_365_start = today - timedelta(days=365)
+        
+        past_365_days_count = len([d for d in all_departure_days 
+                                   if past_365_start <= d < today])
+                                   
+        past_365_remain = 180 - past_365_days_count
 
-        max_365 = 0
-        end_of_check_period = approval + relativedelta(years=5) 
+        past_365_start_str = past_365_start.strftime('%Y/%#m/%#d')
+        today_str = today.strftime('%Y/%#m/%#d')
+        
+        self.lbl_past_365.config(text=f"過去365日離境日數（{past_365_start_str}–{today_str}）：{past_365_days_count}（剩餘 {past_365_remain} 日）")
+        self.color_label(self.lbl_past_365, past_365_remain, [50, 30, 10])
+
+        # 2. Updated: Max 365 Days Calculation
+        self.max_365_periods = []
+        max_365_count = 0
+        
+        # Check period is up to the day before the 5th anniversary of arrival
+        end_of_check_period = arrival + relativedelta(years=5) 
         
         current_date = approval
         while current_date < end_of_check_period:
             start_window = current_date
-            end_window = current_date + timedelta(days=365)
+            end_window = current_date + timedelta(days=365) - timedelta(days=1) # inclusive end
             
-            count = len([d for d in all_departure_days if start_window <= d < end_window])
+            # Count days in [start_window, end_window]
+            count = len([d for d in all_departure_days if start_window <= d <= end_window])
             
-            if count > max_365:
-                max_365 = count
+            if count >= 150: # Only record periods with high counts (e.g., >= 150) or the max
+                period_str = f"{start_window.strftime('%Y/%#m/%#d')}–{end_window.strftime('%Y/%#m/%#d')}"
+                self.max_365_periods.append((count, period_str))
+                
+            if count > max_365_count:
+                max_365_count = count
                 
             current_date += timedelta(days=1)
+            
+        self.max_365_periods.sort(key=lambda x: x[0], reverse=True)
         
-        remain_365 = 180 - max_365
-
-        self.lbl_365.config(text=f"任意365日內最多離境：{max_365}（剩餘 {remain_365} 日）")
-        self.color_label(self.lbl_365, remain_365, [50, 30, 10])
-
-
+        display_periods = []
+        closest_to_180_count = -1
+        closest_period = "N/A"
         
+        for count, period in self.max_365_periods:
+            if count > 180:
+                if len(display_periods) < 5: # Limit displayed periods
+                    display_periods.append(f"{period}：{count}日 (超額 {count - 180} 日)")
+            
+            if 180 >= count > closest_to_180_count:
+                closest_to_180_count = count
+                closest_period = period
+        
+        if display_periods:
+            result_text = "任意365日內最多離境：\n" + "\n".join(display_periods)
+            if closest_to_180_count != -1:
+                 result_text += f"\n最接近180日（未超額）：{closest_period}：{closest_to_180_count}日"
+            remain_max_365 = 180 - max_365_count
+            result_text += f"\n最高紀錄：{max_365_count}日 (剩餘 {remain_max_365} 日)"
+        elif closest_to_180_count != -1:
+            remain_max_365 = 180 - max_365_count
+            result_text = f"任意365日內最多離境：\n{closest_period}：{closest_to_180_count}日 (剩餘 {remain_max_365} 日)"
+        else:
+            remain_max_365 = 180 - max_365_count
+            result_text = f"任意365日內最多離境：{max_365_count}日 (剩餘 {remain_max_365} 日)"
+            
+        self.lbl_max_365.config(text=result_text)
+        self.color_label(self.lbl_max_365, remain_max_365, [50, 30, 10])
+
+        # ILR 5-Year period calculation
         ilr_start = approval + relativedelta(years=1) 
-        ilr_end = (approval + relativedelta(years=6)) - timedelta(days=1) 
+        ilr_end = (arrival + relativedelta(years=5)) - timedelta(days=1) 
 
         period_days_count = len([d for d in all_departure_days 
                                  if ilr_start <= d <= ilr_end])
@@ -350,6 +442,7 @@ class TravelApp:
         self.lbl_period.config(text=f"入籍計算期（{ilr_start_str}–{ilr_end_str}）離境日數：{period_days_count}（剩餘 {remain_long} 日）")
         self.color_label(self.lbl_period, remain_long, [120, 60, 30])
         
+        # Final year calculation 
         final_year_start = ilr_end - relativedelta(years=1) + timedelta(days=1)
         final_year_end = ilr_end
         
