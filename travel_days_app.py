@@ -17,8 +17,8 @@ COLOR_RED = "red"
 class TravelApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("BNO Visa 離境日數計算")
-        self.root.geometry("780x890") 
+        self.root.title("BNO Visa 離境日數計數機 v5.0")
+        self.root.geometry("780x890")
         self.root.resizable(False, True) 
         self.root.configure(bg="#f0f0f0")
         
@@ -113,18 +113,18 @@ class TravelApp:
     def create_widgets(self):
         
         frame_static_top = tk.Frame(self.root, bg="#f0f0f0")
-        frame_static_top.pack(pady=10)
+        frame_static_top.pack(pady=10, padx=10, fill='x')
 
-        tk.Label(frame_static_top, text="批核日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=0, padx=10, pady=(0, 3))
-        tk.Label(frame_static_top, text="到達日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=1, padx=10, pady=(0, 3))
+        tk.Label(frame_static_top, text="批核日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=0, padx=10, pady=(0, 3), sticky='w')
+        tk.Label(frame_static_top, text="到達日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=1, padx=10, pady=(0, 3), sticky='w')
         
         tk.Label(frame_static_top, text="日期格式：yyyy-mm-dd", bg="#f0f0f0", fg="#555", font=("Microsoft JhengHei", 9)).grid(row=0, column=2, padx=(10, 5), pady=(0, 3), columnspan=3, sticky="e") 
 
         self.entry_approval = tk.Entry(frame_static_top, width=15, justify="center")
         self.entry_arrival = tk.Entry(frame_static_top, width=15, justify="center")
         
-        self.entry_approval.grid(row=1, column=0, padx=10, pady=(0, 10))
-        self.entry_arrival.grid(row=1, column=1, padx=10, pady=(0, 10))
+        self.entry_approval.grid(row=1, column=0, padx=10, pady=(0, 10), sticky='w')
+        self.entry_arrival.grid(row=1, column=1, padx=10, pady=(0, 10), sticky='w')
         
         tk.Label(frame_static_top, text="", width=10, bg="#f0f0f0").grid(row=1, column=2, padx=5, pady=(0, 10)) 
         tk.Label(frame_static_top, text="", width=15, bg="#f0f0f0").grid(row=1, column=3, padx=10, pady=(0, 10)) 
@@ -163,8 +163,9 @@ class TravelApp:
         
         tk.Label(self.scrollable_frame, text="出國日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=0, padx=10, pady=(0, 3))
         tk.Label(self.scrollable_frame, text="回國日", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=1, padx=10, pady=(0, 3))
-        tk.Label(self.scrollable_frame, text="365日離境", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=2, padx=5, pady=(0, 3))         tk.Label(self.scrollable_frame, text="活動", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=3, padx=10, pady=(0, 3)) # Moved to column 3
-        tk.Label(self.scrollable_frame, text="刪除", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=4, padx=10, pady=(0, 3)) # Moved to column 4
+        tk.Label(self.scrollable_frame, text="365日離境", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=2, padx=5, pady=(0, 3)) 
+        tk.Label(self.scrollable_frame, text="活動", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=3, padx=10, pady=(0, 3)) 
+        tk.Label(self.scrollable_frame, text="刪除", bg="#f0f0f0", font=("Microsoft JhengHei", 10)).grid(row=0, column=4, padx=10, pady=(0, 3)) 
 
         frame_buttons = tk.Frame(self.root, bg="#f0f0f0")
         frame_buttons.pack(pady=5)
@@ -184,7 +185,7 @@ class TravelApp:
         self.lbl_past_365 = tk.Label(frame_results, text="過去365日離境日數：N/A", bg="#f0f0f0", font=result_font)
         self.lbl_past_365.pack() 
         
-        self.lbl_max_365 = tk.Label(frame_results, text="任意365日內最多離境：0（剩餘180日）", bg="#f0f0f0", font=result_font)
+        self.lbl_max_365 = tk.Label(frame_results, text="任意365日內最長離境：0（剩餘180日）", bg="#f0f0f0", font=result_font)
         self.lbl_max_365.pack()
         
         self.lbl_period = tk.Label(frame_results, text="入籍計算期（+1年至+6年）離境日數：N/A", bg="#f0f0f0", font=result_font)
@@ -236,7 +237,7 @@ class TravelApp:
         var = tk.BooleanVar()
         chk = tk.Checkbutton(parent_frame, variable=var, bg="#f0f0f0", command=self.mark_unsaved)
         chk.grid(row=new_row_index, column=4, padx=5)
-        row.append(var) 
+        row.append(var)
 
         self.rows.append(row)
         
@@ -258,10 +259,10 @@ class TravelApp:
         for i, row in enumerate(self.rows):
             current_row_index = 1 + i
             
-            row[0].grid(row=current_row_index, column=0, padx=10, pady=(0, 5)) 
-            row[1].grid(row=current_row_index, column=1, padx=10, pady=(0, 5)) 
-            row[2].grid(row=current_row_index, column=2, padx=5, pady=(0, 5)) 
-            row[3].grid(row=current_row_index, column=3, padx=10, pady=(0, 5)) 
+            row[0].grid(row=current_row_index, column=0, padx=10, pady=(0, 5))
+            row[1].grid(row=current_row_index, column=1, padx=10, pady=(0, 5))
+            row[2].grid(row=current_row_index, column=2, padx=5, pady=(0, 5))
+            row[3].grid(row=current_row_index, column=3, padx=10, pady=(0, 5))
             
             chk = tk.Checkbutton(parent_frame, variable=row[4], bg="#f0f0f0", command=self.mark_unsaved)
             chk.grid(row=current_row_index, column=4, padx=5)
@@ -274,7 +275,7 @@ class TravelApp:
         new_rows = []
         deleted = False
         for row in self.rows:
-            if row[4].get(): 
+            if row[4].get():
                 for widget in row[:4]: 
                     widget.destroy()
                 deleted = True
@@ -319,7 +320,7 @@ class TravelApp:
             for r in data[1:]:
                 out_date = r[0] if len(r) > 0 else ""
                 in_date = r[1] if len(r) > 1 else ""
-                activity = r[2] if len(r) > 2 else "" # Load activity (Still CSV index 2)
+                activity = r[2] if len(r) > 2 else ""
                 self.add_row(out_date, in_date, activity)
             if not self.rows:
                 self.add_row()
@@ -332,9 +333,9 @@ class TravelApp:
         for row in self.rows:
             out_date = row[0].get().strip()
             in_date = row[1].get().strip()
-            activity = row[3].get().strip() # Get activity (Now UI index 3)
+            activity = row[3].get().strip()
             if out_date or in_date:
-                rows_data.append([out_date, in_date, activity]) # CSV index 2
+                rows_data.append([out_date, in_date, activity])
 
         with open(DATA_FILE, "w", newline='', encoding="utf-8") as f:
             csv.writer(f).writerows(rows_data)
@@ -395,12 +396,15 @@ class TravelApp:
         
         for row in self.rows:
             entry_in = row[1].get()
-            lbl_365_count = row[2] 
+            lbl_365_count = row[2]
             end = self.parse_date(entry_in)
             
             if end: 
                 end_of_check = end
-                start_of_check = end_of_check - timedelta(days=365) + timedelta(days=1)
+                
+                start_of_check_raw = end_of_check - timedelta(days=365) + timedelta(days=1)
+                
+                start_of_check = max(approval, start_of_check_raw) 
                 
                 count_365 = len([d for d in all_departure_days 
                                  if start_of_check <= d <= end_of_check])
@@ -437,7 +441,7 @@ class TravelApp:
         current_date = approval
         while current_date < end_of_check_period:
             start_window = current_date
-            end_window = current_date + timedelta(days=365) - timedelta(days=1) 
+            end_window = current_date + timedelta(days=365) - timedelta(days=1)
             
             count = len([d for d in all_departure_days if start_window <= d <= end_window])
             
